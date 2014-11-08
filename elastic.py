@@ -1,4 +1,3 @@
-from dijkstra import Graph, dijkstra
 from file_read import read_map
 
 transitions = (
@@ -63,24 +62,42 @@ def shortest_path(mapp, y1, x1, y2, x2):
     feasible = True
 
     visited = set()
-    while yCurrent != y2 and xCurrent != x2 and feasible:
+    while (yCurrent != y2 or xCurrent != x2) and feasible:
         dists = [float('inf')] * 4
         for i, transition in enumerate(transitions):
             yNew, xNew = make_transition(yCurrent, xCurrent, transition)
             if between(yNew, 0, len(mapp)) and between(xNew, 0, len(mapp[0])):
-                if (yNew, xNew) not in visited and is_street(mapp[yNew, xNew]):
+                if (yNew, xNew) not in visited and is_street(mapp[yNew][xNew]):
                     dists[i] = dist(yNew, xNew, y2, x2)
         if dists == [float('inf')] * 4:
             feasible = False
         bestTransition = transitions[dists.index(min(dists))]
         yNew, xNew = make_transition(yCurrent, xCurrent, bestTransition)
+        print yNew, xNew
         visited.add((yCurrent, xCurrent))
         path.append((yCurrent, xCurrent))
         yCurrent, xCurrent = yNew, xNew
-    if  yCurrent == y2 and xCurrent == x2:
+    if yCurrent == y2 and xCurrent == x2:
+        path.append((yCurrent, xCurrent))
         return len(path), path
     else:
         return None
 
+
+def shortest_path_nice(mapp, loca, locb):
+    y1, x1 = loca
+    y2, x2 = locb
+    result = shortest_path(mapp, y1, x1, y2, x2)
+    if result is None:
+        return None
+    else:
+        ret = []
+        for node in result[1]:
+            ret.append({'action': 'drive',
+                        'y': node[0],
+                        'x': node[1]})
+        return ret
+
 if __name__ == "__main__":
-    pass
+    m = read_map()
+    print shortest_path_nice(m, (5, 1), (6, 6))
